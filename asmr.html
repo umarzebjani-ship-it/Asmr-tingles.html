@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BallSimulator.com – The most powerful viral bouncing ball simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-dark: #0a0a0f; --bg-card: #12121a; --bg-card-hover: #1a1a25; --bg-panel: #0f0f17;
+            --neon-pink: #ff2d92; --neon-purple: #b829dd; --neon-cyan: #00d4ff; --neon-green: #00ff88; --neon-yellow: #ffd700;
+            --text-primary: #ffffff; --text-secondary: #a0a0b0; --text-muted: #6b6b7b;
+            --border-color: #2a2a35; --border-hover: #3a3a50;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-dark); color: var(--text-primary); line-height: 1.6; overflow-x: hidden;
+        }
+        nav {
+            position: fixed; top: 0; width: 100%; padding: 1rem 2rem;
+            background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(20px);
+            z-index: 1000; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .logo {
+            font-size: 1.5rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .logo::before { content: '⚡'; -webkit-text-fill-color: var(--neon-yellow); }
+        .nav-links { display: flex; gap: 2rem; align-items: center; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-weight: 500; transition: color 0.3s; font-size: 0.95rem; }
+        .nav-links a:hover { color: var(--text-primary); }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+            color: white; padding: 0.6rem 1.5rem; border-radius: 50px; text-decoration: none;
+            font-weight: 600; border: none; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;
+            font-family: inherit; font-size: 0.95rem;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255, 45, 146, 0.3); }
+        .btn-primary:active { transform: translateY(0); }
+        .hero {
+            min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 8rem 2rem 4rem; position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, rgba(184, 41, 221, 0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero::after {
+            content: ''; position: absolute; top: 20%; right: 10%; width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(255, 45, 146, 0.08) 0%, transparent 70%);
+            pointer-events: none; border-radius: 50%;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.6rem 1.5rem; background: rgba(255, 45, 146, 0.1);
+            border: 1px solid rgba(255, 45, 146, 0.3); border-radius: 50px;
+            color: var(--neon-pink); font-size: 0.85rem; font-weight: 600; margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 45, 146, 0.4); }
+            50% { opacity: 0.9; box-shadow: 0 0 0 10px rgba(255, 45, 146, 0); }
+        }
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900; line-height: 1.1;
+            margin-bottom: 1.5rem; max-width: 900px; position: relative; z-index: 1;
+        }
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple), var(--neon-cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hero-subtitle {
+            font-size: 1.25rem; color: var(--text-secondary); max-width: 600px;
+            margin-bottom: 2.5rem; position: relative; z-index: 1;
+        }
+        .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; position: relative; z-index: 1; }
+        .btn-large { padding: 1rem 2.5rem; font-size: 1.1rem; }
+        .btn-secondary {
+            background: transparent; color: var(--text-primary); padding: 1rem 2.5rem;
+            border-radius: 50px; text-decoration: none; font-weight: 600;
+            border: 2px solid var(--border-color); transition: all 0.3s;
+            font-family: inherit; font-size: 1.1rem; cursor: pointer;
+        }
+        .btn-secondary:hover { border-color: var(--neon-purple); background: rgba(184, 41, 221, 0.1); }
+        section { padding: 6rem 2rem; max-width: 1200px; margin: 0 auto; }
+        .section-header { text-align: center; margin-bottom: 4rem; }
+        .section-header h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; margin-bottom: 1rem; }
+        .section-header p { color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .feature-card {
+            background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px;
+            padding: 2rem; transition: all 0.4s; position: relative; overflow: hidden;
+        }
+        .feature-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple));
+            transform: scaleX(0); transition: transform 0.4s;
+        }
+        .feature-card:hover { transform: translateY(-5px); border-color: var(--neon-purple); background: var(--bg-card-hover); }
+        .feature-card:hover::before { transform: scaleX(1); }
+        .feature-card h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary); }
+        .feature-card p { color: var(--text-secondary); line-height: 1.7; }
+        .feature-icon {
+            width: 60px; height: 60px;
+            background: linear-gradient(135deg, rgba(255, 45, 146, 0.1), rgba(184, 41, 221, 0.1));
+            border-radius: 16px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1.5rem; font-size: 1.5rem;
+        }
+        .simulator-preview {
+            background: linear-gradient(135deg, rgba(255, 45, 146, 0.05), rgba(0, 212, 255, 0.05));
+            border-radius: 30px; padding: 4rem 2rem; margin: 4rem auto;
+            text-align: center; border: 1px solid var(--border-color); position: relative; overflow: hidden;
+        }
+        .simulator-preview::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(184, 41, 221, 0.08) 0%, transparent 50%);
+            animation: rotate 25s linear infinite;
+        }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .preview-container { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+        .modes-section {
+            background: var(--bg-card); border-radius: 30px; padding: 4rem 2rem;
+            margin: 4rem auto; border: 1px solid var(--border-color);
+        }
+        .modes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+        .mode-item {
+            background: var(--bg-dark); border-radius: 16px; padding: 1.5rem;
+            border: 1px solid var(--border-color); transition: all 0.3s; cursor: pointer; position: relative;
+        }
+        .mode-item:hover { border-color: var(--neon-cyan); transform: translateY(-3px); }
+        .mode-item .mode-visual {
+            width: 100%; aspect-ratio: 1; border-radius: 12px; display: flex;
+            align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 1rem;
+            position: relative; overflow: hidden;
+        }
+        .mode-item h4 { font-weight: 700; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .mode-item p { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; }
+        .popular-badge {
+            position: absolute; top: 1rem; right: 1rem;
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+            color: white; padding: 0.25rem 0.75rem; border-radius: 20px;
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; z-index: 2;
+        }
+        .coming-soon { text-align: center; padding: 4rem 2rem; }
+        .coming-soon-icon { font-size: 4rem; margin-bottom: 1.5rem; display: inline-block; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+        .gallery-item { border-radius: 16px; overflow: hidden; aspect-ratio: 1; position: relative; cursor: pointer; transition: transform 0.4s; }
+        .gallery-item:hover { transform: scale(1.05); }
+        .gallery-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0; padding: 1rem;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            opacity: 0; transition: opacity 0.3s; font-weight: 600;
+        }
+        .gallery-item:hover .gallery-overlay { opacity: 1; }
+        .recorder-section {
+            background: var(--bg-card); border-radius: 30px; padding: 4rem 2rem;
+            margin: 4rem auto; border: 1px solid var(--border-color); position: relative; overflow: hidden;
+        }
+        .recorder-section::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple), var(--neon-cyan));
+        }
+        .recorder-container { max-width: 900px; margin: 0 auto; }
+        .recorder-display {
+            background: #000; border-radius: 16px; aspect-ratio: 16/9;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 2rem; position: relative; overflow: hidden;
+            border: 2px solid var(--border-color);
+        }
+        .recorder-display video { width: 100%; height: 100%; object-fit: contain; }
+        .recorder-placeholder { text-align: center; color: var(--text-muted); }
+        .recorder-placeholder .placeholder-icon { font-size: 4rem; margin-bottom: 1rem; opacity: 0.5; }
+        .recorder-controls {
+            display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+            justify-content: center; margin-bottom: 1.5rem;
+        }
+        .control-group { display: flex; flex-direction: column; gap: 0.5rem; min-width: 150px; }
+        .control-group label {
+            font-size: 0.8rem; color: var(--text-muted); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .control-group select {
+            background: var(--bg-dark); border: 1px solid var(--border-color);
+            color: var(--text-primary); padding: 0.75rem 1rem; border-radius: 10px;
+            font-family: inherit; font-size: 0.95rem; cursor: pointer; outline: none; transition: border-color 0.3s;
+        }
+        .control-group select:hover, .control-group select:focus { border-color: var(--neon-purple); }
+        .control-group select option { background: var(--bg-dark); color: var(--text-primary); }
+        .recorder-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn-record {
+            background: linear-gradient(135deg, #ff4444, #cc0000); color: white;
+            padding: 1rem 2rem; border-radius: 50px; border: none;
+            font-family: inherit; font-weight: 700; font-size: 1rem;
+            cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .btn-record:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255, 68, 68, 0.3); }
+        .btn-record.recording { background: linear-gradient(135deg, #666, #444); animation: recording-pulse 1.5s infinite; }
+        @keyframes recording-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 15px rgba(255, 68, 68, 0); }
+        }
+        .btn-stop {
+            background: linear-gradient(135deg, #444, #222); color: white;
+            padding: 1rem 2rem; border-radius: 50px; border: none;
+            font-family: inherit; font-weight: 700; font-size: 1rem;
+            cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .btn-stop:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+        .btn-download {
+            background: linear-gradient(135deg, var(--neon-green), #00cc6a); color: white;
+            padding: 1rem 2rem; border-radius: 50px; border: none;
+            font-family: inherit; font-weight: 700; font-size: 1rem;
+            cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .btn-download:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3); }
+        .btn-download:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .recording-timer {
+            font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums;
+            color: var(--neon-pink); min-width: 100px; text-align: center;
+        }
+        .recording-indicator { display: inline-flex; align-items: center; gap: 0.5rem; color: #ff4444; font-weight: 600; font-size: 0.9rem; }
+        .recording-dot { width: 10px; height: 10px; background: #ff4444; border-radius: 50%; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .recorder-status { text-align: center; margin-top: 1rem; min-height: 24px; color: var(--text-secondary); font-size: 0.9rem; }
+        .recorder-info {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem; margin-top: 2rem;
+        }
+        .info-card {
+            background: var(--bg-dark); border-radius: 12px; padding: 1.5rem;
+            border: 1px solid var(--border-color); text-align: center;
+        }
+        .info-card .info-value { font-size: 1.5rem; font-weight: 800; color: var(--neon-cyan); margin-bottom: 0.25rem; }
+        .info-card .info-label { font-size: 0.85rem; color: var(--text-muted); }
+        .affiliate-section {
+            background: linear-gradient(135deg, rgba(255, 45, 146, 0.1), rgba(184, 41, 221, 0.1));
+            border-radius: 24px; padding: 3rem; text-align: center;
+            border: 1px solid var(--border-color); margin: 4rem auto;
+        }
+        .affiliate-section h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+        .affiliate-section .highlight { color: var(--neon-pink); font-weight: 700; }
+        footer {
+            background: var(--bg-card); border-top: 1px solid var(--border-color);
+            padding: 4rem 2rem 2rem; margin-top: 6rem;
+        }
+        .footer-content {
+            max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem;
+        }
+        .footer-column h4 { font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary); }
+        .footer-column a { display: block; color: var(--text-secondary); text-decoration: none; padding: 0.5rem 0; transition: color 0.3s; }
+        .footer-column a:hover { color: var(--neon-pink); }
+        .footer-bottom {
+            max-width: 1200px; margin: 3rem auto 0; padding-top: 2rem;
+            border-top: 1px solid var(--border-color); text-align: center; color: var(--text-muted);
+        }
+        .fade-in { opacity: 0; transform: translateY(30px); transition: opacity 0.6s, transform 0.6s; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero h1 { font-size: 2.5rem; }
+            section { padding: 4rem 1rem; }
+            .recorder-controls { flex-direction: column; align-items: stretch; }
+            .control-group { min-width: 100%; }
+        }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-purple); }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">BallSimulator</div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#modes">Modes</a>
+            <a href="#recorder">Recorder</a>
+            <a href="#gallery">Gallery</a>
+            <a href="#recorder" class="btn-primary">Start Recording</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-badge">🔥 Now Available – Version 2.0</div>
+        <h1>Create viral videos<br>that <span class="highlight">make money</span><br>in 5 minutes.</h1>
+        <p class="hero-subtitle">Get millions of views with the most powerful bouncing ball simulator designed for content creators.</p>
+        <div class="hero-cta">
+            <a href="#recorder" class="btn-primary btn-large">Start Creating Now</a>
+            <a href="#features" class="btn-secondary">Learn More</a>
+        </div>
+    </section>
+
+    <section id="features" class="fade-in">
+        <div class="section-header">
+            <h2>Physics & music</h2>
+            <p>The first music-driven bouncing-ball simulator designed for creators. Generate hypnotic loops, sync the sound, and blow up your view counts.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎵</div>
+                <h3>Music Sync</h3>
+                <p>Import your own sounds, or use our library of globally recognized hits remixed by the ball's physics.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎬</div>
+                <h3>Video Export</h3>
+                <p>Record and export high-quality videos ready to upload to TikTok, Shorts, and Reels instantly.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Viral Algorithm</h3>
+                <p>Optimized visual patterns scientifically proven to increase watch time and engagement rates.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="simulator-preview fade-in">
+        <div class="preview-container">
+            <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">See it in action</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Watch how a single ball creates mesmerizing patterns</p>
+            <canvas id="demoCanvas" width="500" height="500" style="border-radius: 20px; background: #000; max-width: 100%;"></canvas>
+        </div>
+    </section>
+
+    <section id="modes" class="modes-section fade-in">
+        <div class="section-header"><h2>Multiple modes. Infinite possibilities</h2></div>
+        <div class="modes-grid">
+            <div class="mode-item">
+                <span class="popular-badge">Popular</span>
+                <div class="mode-visual" style="background: linear-gradient(135deg, #ff2d92, #b829dd);"><span style="font-size: 4rem;">🔴</span></div>
+                <h4>Classic</h4>
+                <p>The ultimate viral simulation. A hypnotic dance where the ball, desperate to escape, keeps viewers hooked until the very last circle.</p>
+            </div>
+            <div class="mode-item">
+                <span class="popular-badge">Popular</span>
+                <div class="mode-visual" style="background: linear-gradient(135deg, #00d4ff, #00ff88);"><span style="font-size: 4rem;">♾️</span></div>
+                <h4>Infinite Loop</h4>
+                <p>Mathematical virality at its peak. Watch as a single ball multiplies into thousands in an exponential storm.</p>
+            </div>
+            <div class="mode-item">
+                <div class="mode-visual" style="background: linear-gradient(135deg, #ff6b35, #f7931e);"><span style="font-size: 4rem;">💥</span></div>
+                <h4>Destruction</h4>
+                <p>Raw satisfaction (ASMR). Turn every beat into impact and watch the walls shatter, until the ball finally escapes!</p>
+            </div>
+            <div class="mode-item">
+                <span class="popular-badge">Popular</span>
+                <div class="mode-visual" style="background: linear-gradient(135deg, #667eea, #764ba2);"><span style="font-size: 4rem;">📌</span></div>
+                <h4>Accumulation</h4>
+                <p>One of the trendiest bouncing ball modes! Every ball that hits a spike stays trapped until the final escape!</p>
+            </div>
+            <div class="mode-item">
+                <div class="mode-visual" style="background: linear-gradient(135deg, #f093fb, #f5576c);"><span style="font-size: 4rem;">💫</span></div>
+                <h4>Collision</h4>
+                <p>Two balls bouncing in a circle until they collide, triggering a massive explosion of balls!</p>
+            </div>
+            <div class="mode-item">
+                <span class="popular-badge">Popular</span>
+                <div class="mode-visual" style="background: linear-gradient(135deg, #4facfe, #00f2fe);"><span style="font-size: 4rem;">🕸️</span></div>
+                <h4>Web Expansion</h4>
+                <p>The ball weaves a complex, hypnotic geometric web, growing larger with every impact. Dense, striking visuals that captivate.</p>
+            </div>
+            <div class="mode-item">
+                <div class="mode-visual" style="background: linear-gradient(135deg, #43e97b, #38f9d7);"><span style="font-size: 4rem;">🌈</span></div>
+                <h4>Trail Expansion</h4>
+                <p>Let the ball paint the void! With its endless rainbow trail, merging growth with an explosion of color.</p>
+            </div>
+            <div class="mode-item">
+                <div class="mode-visual" style="background: linear-gradient(135deg, #fa709a, #fee140);"><span style="font-size: 4rem;">🌀</span></div>
+                <h4>Spiral</h4>
+                <p>Immerse your viewers in a visual vortex. The ball traces a hypnotic spiral that instantly grabs attention.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="coming-soon fade-in">
+        <div class="coming-soon-icon">🎁</div>
+        <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1rem;">Coming soon…</h2>
+        <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto;">Fresh simulation modes and exciting new features will be rolled out regularly, giving you endless creative possibilities.</p>
+    </section>
+
+    <section id="recorder" class="recorder-section fade-in">
+        <div class="recorder-container">
+            <div class="section-header" style="margin-bottom: 2rem;">
+                <h2>🎬 Easy Screen Recorder</h2>
+                <p>Record your simulations in multiple formats. Choose your resolution and start capturing instantly.</p>
+            </div>
+            <div class="recorder-display" id="recorderDisplay">
+                <div class="recorder-placeholder" id="recorderPlaceholder">
+                    <div class="placeholder-icon">📹</div>
+                    <p>Click "Start Recording" to capture your screen</p>
+                    <p style="font-size: 0.85rem; margin-top: 0.5rem;">Select your preferred resolution below</p>
+                </div>
+                <video id="previewVideo" class="hidden" autoplay muted playsinline></video>
+            </div>
+            <div class="recorder-controls">
+                <div class="control-group">
+                    <label>Resolution</label>
+                    <select id="resolutionSelect">
+                        <option value="720">720p HD (1280×720)</option>
+                        <option value="1080" selected>1080p Full HD (1920×1080)</option>
+                        <option value="1440">1440p QHD (2560×1440)</option>
+                        <option value="2160">2K UHD (3840×2160)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Frame Rate</label>
+                    <select id="fpsSelect">
+                        <option value="30">30 FPS</option>
+                        <option value="60" selected>60 FPS (Smooth)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Format</label>
+                    <select id="formatSelect">
+                        <option value="webm" selected>WebM (Recommended)</option>
+                        <option value="mp4">MP4 (H.264)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Timer</label>
+                    <div class="recording-timer" id="recordingTimer">00:00:00</div>
+                </div>
+            </div>
+            <div class="recorder-buttons">
+                <button class="btn-record" id="startBtn"><span>🔴</span> Start Recording</button>
+                <button class="btn-stop" id="stopBtn" disabled><span>⏹️</span> Stop Recording</button>
+                <button class="btn-download" id="downloadBtn" disabled><span>💾</span> Download Video</button>
+            </div>
+            <div class="recorder-status" id="recorderStatus">Ready to record</div>
+            <div class="recorder-info">
+                <div class="info-card"><div class="info-value" id="fileSize">--</div><div class="info-label">File Size</div></div>
+                <div class="info-card"><div class="info-value" id="duration">--</div><div class="info-label">Duration</div></div>
+                <div class="info-card"><div class="info-value" id="resolution">1080p</div><div class="info-label">Resolution</div></div>
+                <div class="info-card"><div class="info-value" id="format">WebM</div><div class="info-label">Format</div></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="gallery" class="fade-in">
+        <div class="section-header">
+            <h2>Viral Moments</h2>
+            <p>Real simulations created by our community</p>
+        </div>
+        <div class="gallery-grid">
+            <div class="gallery-item" style="background: linear-gradient(135deg, #ff2d92, #b829dd);">
+                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:4rem;">🎯</div>
+                <div class="gallery-overlay">Classic Mode</div>
+            </div>
+            <div class="gallery-item" style="background: linear-gradient(135deg, #00d4ff, #00ff88);">
+                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:4rem;">♾️</div>
+                <div class="gallery-overlay">Infinite Loop</div>
+            </div>
+            <div class="gallery-item" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:4rem;">💥</div>
+                <div class="gallery-overlay">Destruction</div>
+            </div>
+            <div class="gallery-item" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:4rem;">🌈</div>
+                <div class="gallery-overlay">Trail Mode</div>
+            </div>
+            <div class="gallery-item" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:4rem;">🕸️</div>
+                <div class="gallery-overlay">Web Expansion</div>
+            </div>
+            <div class="gallery-item" style="background: linear-gradient(135deg, #fa709a, #fee140);">
+                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:4rem;">🌀</div>
+                <div class="gallery-overlay">Spiral</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="affiliate-section fade-in">
+        <h3>🚀 Bonus: Affiliate Program</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Earn <span class="highlight">30% recurring commission</span> on every sale through your referral link.</p>
+        <button class="btn-primary" onclick="alert('Affiliate program coming soon!')">Join Affiliate Program</button>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h4>Product</h4>
+                <a href="#features">Features</a>
+                <a href="#modes">Simulation Modes</a>
+                <a href="#recorder">Screen Recorder</a>
+                <a href="#">Changelog</a>
+            </div>
+            <div class="footer-column">
+                <h4>Resources</h4>
+                <a href="#">Documentation</a>
+                <a href="#">Tutorials</a>
+                <a href="#">API Reference</a>
+                <a href="#">Community</a>
+            </div>
+            <div class="footer-column">
+                <h4>Company</h4>
+                <a href="#">About Us</a>
+                <a href="#">Blog</a>
+                <a href="#">Careers</a>
+                <a href="#">Contact</a>
+            </div>
+            <div class="footer-column">
+                <h4>Legal</h4>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+                <a href="#">Licenses</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 BallSimulator.com. All rights reserved. Made with 💜 for creators.</p>
+        </div>
+    </footer>
+
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        const canvas = document.getElementById('demoCanvas');
+        const ctx = canvas.getContext('2d');
+        let angle = 0;
+        const centerX = canvas.width / 2, centerY = canvas.height / 2, radius = 180;
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255, 45, 146, 0.3)'; ctx.lineWidth = 2; ctx.stroke();
+            const ballX = centerX + Math.cos(angle) * radius;
+            const ballY = centerY + Math.sin(angle) * radius;
+            for (let i = 0; i < 20; i++) {
+                const trailAngle = angle - (i * 0.1);
+                const trailX = centerX + Math.cos(trailAngle) * radius;
+                const trailY = centerY + Math.sin(trailAngle) * radius;
+                const alpha = (20 - i) / 20;
+                ctx.beginPath();
+                ctx.arc(trailX, trailY, 8 - (i * 0.3), 0, Math.PI * 2);
+                const hue = (angle * 50 + i * 10) % 360;
+                ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${alpha * 0.5})`;
+                ctx.fill();
+            }
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, 12, 0, Math.PI * 2);
+            const mainHue = (angle * 50) % 360;
+            ctx.fillStyle = `hsl(${mainHue}, 80%, 60%)`;
+            ctx.shadowBlur = 20; ctx.shadowColor = `hsl(${mainHue}, 80%, 60%)`;
+            ctx.fill(); ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 60, 0, Math.PI * 2);
+            ctx.strokeStyle = `hsla(${mainHue}, 80%, 60%, 0.5)`; ctx.lineWidth = 1; ctx.stroke();
+            angle += 0.03;
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        let mediaRecorder, recordedChunks = [], recordingStartTime, timerInterval, stream = null;
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const resolutionSelect = document.getElementById('resolutionSelect');
+        const fpsSelect = document.getElementById('fpsSelect');
+        const formatSelect = document.getElementById('formatSelect');
+        const timerDisplay = document.getElementById('recordingTimer');
+        const statusDisplay = document.getElementById('recorderStatus');
+        const previewVideo = document.getElementById('previewVideo');
+        const recorderPlaceholder = document.getElementById('recorderPlaceholder');
+        const fileSizeDisplay = document.getElementById('fileSize');
+        const durationDisplay = document.getElementById('duration');
+        const resolutionDisplay = document.getElementById('resolution');
+        const formatDisplay = document.getElementById('format');
+
+        function updateInfo() {
+            const resMap = { '720': '720p', '1080': '1080p', '1440': '1440p', '2160': '2K' };
+            resolutionDisplay.textContent = resMap[resolutionSelect.value] || resolutionSelect.value;
+            formatDisplay.textContent = formatSelect.value.toUpperCase();
+        }
+        resolutionSelect.addEventListener('change', updateInfo);
+        formatSelect.addEventListener('change', updateInfo);
+        updateInfo();
+
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+        function updateTimer() { timerDisplay.textContent = formatTime(Date.now() - recordingStartTime); }
+
+        function getConstraints() {
+            const res = parseInt(resolutionSelect.value);
+            const fps = parseInt(fpsSelect.value);
+            const width = res === 720 ? 1280 : res === 1080 ? 1920 : res === 1440 ? 2560 : 3840;
+            const height = res === 720 ? 720 : res === 1080 ? 1080 : res === 1440 ? 1440 : 2160;
+            return { video: { width: { ideal: width }, height: { ideal: height }, frameRate: { ideal: fps } }, audio: false };
+        }
+
+        startBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getDisplayMedia(getConstraints());
+                previewVideo.srcObject = stream;
+                previewVideo.classList.remove('hidden');
+                recorderPlaceholder.classList.add('hidden');
+                const mimeType = formatSelect.value === 'mp4' ? 'video/webm;codecs=h264' : 'video/webm;codecs=vp9';
+                const options = { mimeType: MediaRecorder.isTypeSupported(mimeType) ? mimeType : 'video/webm' };
+                mediaRecorder = new MediaRecorder(stream, options);
+                recordedChunks = [];
+                mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: options.mimeType });
+                    const url = URL.createObjectURL(blob);
+                    previewVideo.srcObject = null;
+                    previewVideo.src = url;
+                    previewVideo.controls = true;
+                    previewVideo.muted = false;
+                    fileSizeDisplay.textContent = (blob.size / (1024 * 1024)).toFixed(2) + ' MB';
+                    durationDisplay.textContent = formatTime(Date.now() - recordingStartTime);
+                    downloadBtn.disabled = false;
+                    downloadBtn.onclick = () => {
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `ballsimulator-recording-${Date.now()}.${formatSelect.value === 'mp4' ? 'mp4' : 'webm'}`;
+                        a.click();
+                    };
+                    statusDisplay.textContent = 'Recording saved! Preview ready below.';
+                    statusDisplay.style.color = 'var(--neon-green)';
+                };
+                mediaRecorder.start(1000);
+                recordingStartTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+                startBtn.disabled = true;
+                startBtn.classList.add('recording');
+                startBtn.innerHTML = '<span class="recording-dot"></span> Recording...';
+                stopBtn.disabled = false;
+                downloadBtn.disabled = true;
+                statusDisplay.textContent = 'Recording in progress... Select the screen/window to record';
+                statusDisplay.style.color = '#ff4444';
+                stream.getVideoTracks()[0].onended = () => stopRecording();
+            } catch (err) {
+                console.error('Error:', err);
+                statusDisplay.textContent = 'Error: ' + err.message;
+                statusDisplay.style.color = '#ff4444';
+            }
+        });
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+            if (stream) stream.getTracks().forEach(track => track.stop());
+            clearInterval(timerInterval);
+            startBtn.disabled = false;
+            startBtn.classList.remove('recording');
+            startBtn.innerHTML = '<span>🔴</span> Start Recording';
+            stopBtn.disabled = true;
+            timerDisplay.textContent = '00:00:00';
+        }
+        stopBtn.addEventListener('click', stopRecording);
+
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                ripple.style.cssText = `position:absolute;width:20px;height:20px;background:rgba(255,255,255,0.3);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;animation:ripple 0.6s ease-out;`;
+                const rect = this.getBoundingClientRect();
+                ripple.style.left = (e.clientX - rect.left) + 'px';
+                ripple.style.top = (e.clientY - rect.top) + 'px';
+                this.style.position = 'relative'; this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+        const rippleStyle = document.createElement('style');
+        rippleStyle.textContent = '@keyframes ripple { to { width: 200px; height: 200px; opacity: 0; } }';
+        document.head.appendChild(rippleStyle);
+    </script>
+</body>
+</html>
